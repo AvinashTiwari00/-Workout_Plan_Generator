@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'user_input_screen.dart';
+import 'login_screen.dart';
+import 'signup_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -16,6 +17,16 @@ class WelcomeScreen extends StatelessWidget {
             child: Image.network(
               "https://images.pexels.com/photos/6390236/pexels-photo-6390236.jpeg",
               fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: Colors.blueGrey.shade900,
+                child: const Center(
+                  child: Icon(
+                    Icons.fitness_center,
+                    size: 100,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           ),
 
@@ -47,11 +58,13 @@ class WelcomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: isWeb ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                      crossAxisAlignment: isWeb
+                          ? CrossAxisAlignment.center
+                          : CrossAxisAlignment.start,
                       children: [
                         const Spacer(),
-                        if (isWeb) const Spacer(), // Push content more to center on web
-
+                        if (isWeb)
+                          const Spacer(), // Push content more to center on web
                         // ⚡ Main Title
                         Text(
                           "TRANSFORM\nYOUR BODY",
@@ -97,19 +110,23 @@ class WelcomeScreen extends StatelessWidget {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const UserInputScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const SignupScreen(),
+                                ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade600,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                               padding: EdgeInsets.zero,
                               elevation: 8,
                               shadowColor: Colors.blue.withOpacity(0.4),
                             ),
                             child: const Text(
-                              "Create My Plan",
+                              "Get Started",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -120,34 +137,27 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
 
-                        // 👉 Skip Button
                         Center(
                           child: TextButton(
                             onPressed: () {
-                              // Skipping directly to Dashboard requires a default user or logic
-                              // For now, we'll direct to input screen as 'Skip' might imply 'Skip Intro'
-                              // If flow requires skipping input, we need default data.
-                              // Based on prompt "Keep the “Skip for now” option... Ensure it does not visually compete",
-                              // I will keep it pointing to Input Screen or Dashboard if possible. 
-                              // But Dashboard needs user. Let's send to Input Screen for now to ensure data integrity
-                              // OR we can make a default user. 
-                              // Current code sent to UserInputScreen. I will keep that flow to be safe.
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const UserInputScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
                               );
                             },
                             child: Text(
-                              "Skip for now",
+                              "Login",
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
                         ),
-                        
+
                         SizedBox(height: isWeb ? 40 : 20),
                       ],
                     ),

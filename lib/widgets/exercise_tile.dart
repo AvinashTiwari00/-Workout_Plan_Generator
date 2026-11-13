@@ -5,11 +5,7 @@ class ExerciseTile extends StatelessWidget {
   final Exercise exercise;
   final int index;
 
-  const ExerciseTile({
-    super.key,
-    required this.exercise,
-    required this.index,
-  });
+  const ExerciseTile({super.key, required this.exercise, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +20,7 @@ class ExerciseTile extends StatelessWidget {
             color: Colors.grey.shade300,
             blurRadius: 8,
             offset: const Offset(0, 3),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -43,24 +39,19 @@ class ExerciseTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   "${exercise.sets} sets • ${exercise.reps} reps",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 12),
-          Container(
+          SizedBox(
             height: 70,
             width: 90,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: AssetImage("assets/images/ex_${index + 1}.png"),
-                fit: BoxFit.cover,
-              ),
+            child: const Icon(
+              Icons.fitness_center,
+              size: 40,
+              color: Colors.blue,
             ),
           ),
         ],
@@ -68,4 +59,3 @@ class ExerciseTile extends StatelessWidget {
     );
   }
 }
-

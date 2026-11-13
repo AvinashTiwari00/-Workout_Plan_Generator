@@ -12,6 +12,7 @@ class WeeklySummaryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
+        foregroundColor: Colors.white,
         title: const Text("Weekly Summary"),
         centerTitle: true,
         backgroundColor: Colors.blue.shade700,
@@ -30,7 +31,11 @@ class WeeklySummaryScreen extends StatelessWidget {
                 children: [
                   Text(
                     "$completedDays / 7 Days Completed",
-                    style: const TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   const Text(
@@ -50,7 +55,7 @@ class WeeklySummaryScreen extends StatelessWidget {
                   : "✨ Keep working — achievement unlocks at 4 days!",
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-            )
+            ),
           ],
         ),
       ),

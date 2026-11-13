@@ -1,7 +1,74 @@
+import '../models/user_models.dart';
 import 'package:college_project/models/workout_plan.dart';
 
 class WorkoutPlanService {
-  WorkoutPlan generatePlan(UserGoal goal) {
+  WorkoutPlan generateForProfile(UserProfile profile) => generatePlan(
+    profile.goal ?? UserGoal.maintenance,
+    location: profile.workoutLocation,
+    experience: profile.experienceLevel,
+    daysPerWeek: profile.daysPerWeek,
+  );
+
+  WorkoutPlan generatePlan(
+    UserGoal goal, {
+    WorkoutLocation? location,
+    ExperienceLevel? experience,
+    int? daysPerWeek,
+  }) {
+    final base = _basePlan(goal);
+    final days = (daysPerWeek ?? base.workoutDays).clamp(1, 7);
+    final level = experience ?? ExperienceLevel.beginner;
+    final home = location != WorkoutLocation.gym;
+    const homeNames = [
+      'Bodyweight Squats',
+      'Wall Push-ups',
+      'Glute Bridges',
+      'Bird Dogs',
+      'Standing Calf Raises',
+    ];
+    return WorkoutPlan(
+      goal: goal,
+      workoutDays: days,
+      schedule: [
+        for (var i = 0; i < days; i++)
+          WorkoutDay(
+            name:
+                'Day ${i + 1}: ${home ? 'Full Body (No Equipment)' : base.schedule[i % base.schedule.length].name.split(': ').last}',
+            muscleGroups: home
+                ? ['Whole Body']
+                : base.schedule[i % base.schedule.length].muscleGroups,
+            exercises: [
+              for (
+                var j = 0;
+                j < base.schedule[i % base.schedule.length].exercises.length;
+                j++
+              )
+                Exercise(
+                  name: home
+                      ? homeNames[j % homeNames.length]
+                      : base
+                            .schedule[i % base.schedule.length]
+                            .exercises[j]
+                            .name,
+                  sets: level == ExperienceLevel.beginner
+                      ? '2'
+                      : level == ExperienceLevel.advanced
+                      ? '4'
+                      : '3',
+                  reps: home
+                      ? (goal == UserGoal.fatLoss ? '12-15' : '8-12')
+                      : base
+                            .schedule[i % base.schedule.length]
+                            .exercises[j]
+                            .reps,
+                ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  WorkoutPlan _basePlan(UserGoal goal) {
     switch (goal) {
       case UserGoal.muscleGain:
         return _generateMuscleGainPlan();
@@ -33,7 +100,11 @@ class WorkoutPlanService {
           muscleGroups: ["Back", "Biceps"],
           exercises: [
             Exercise(name: "Deadlifts", sets: "3", reps: "5-8"),
-            Exercise(name: "Pull-Ups (or Lat Pulldowns)", sets: "4", reps: "8-10"),
+            Exercise(
+              name: "Pull-Ups (or Lat Pulldowns)",
+              sets: "4",
+              reps: "8-10",
+            ),
             Exercise(name: "Barbell Rows", sets: "4", reps: "8-10"),
             Exercise(name: "Face Pulls", sets: "3", reps: "12-15"),
             Exercise(name: "Barbell Bicep Curls", sets: "3", reps: "10-12"),

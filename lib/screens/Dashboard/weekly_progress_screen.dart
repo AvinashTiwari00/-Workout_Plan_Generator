@@ -12,6 +12,7 @@ class WeeklyProgressScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
+        foregroundColor: Colors.white,
         title: const Text("Weekly Progress"),
         centerTitle: true,
         backgroundColor: Colors.blue.shade700,
@@ -22,7 +23,6 @@ class WeeklyProgressScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // --------------------------------- HEADER SUMMARY CARD ---------------------------------
             Container(
               width: double.infinity,
@@ -37,7 +37,7 @@ class WeeklyProgressScreen extends StatelessWidget {
                     color: Colors.blue.shade200.withOpacity(0.4),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ],
               ),
               child: Column(
@@ -81,35 +81,51 @@ class WeeklyProgressScreen extends StatelessWidget {
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(vertical: 8),
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
                   ],
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 20,
-                      backgroundColor: isCompleted ? Colors.green.shade100 : Colors.grey.shade200,
+                      backgroundColor: isCompleted
+                          ? Colors.green.shade100
+                          : Colors.grey.shade200,
                       child: Icon(
                         isCompleted ? Icons.check : Icons.close,
-                        color: isCompleted ? Colors.green.shade600 : Colors.red.shade400,
+                        color: isCompleted
+                            ? Colors.green.shade600
+                            : Colors.red.shade400,
                       ),
                     ),
                     const SizedBox(width: 15),
                     Text(
                       e.key,
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const Spacer(),
                     SizedBox(
                       width: 150,
                       child: LinearProgressIndicator(
                         value: e.value.toDouble(),
-                        color: isCompleted ? Colors.green.shade600 : Colors.grey.shade400,
+                        color: isCompleted
+                            ? Colors.green.shade600
+                            : Colors.grey.shade400,
                         backgroundColor: Colors.grey.shade200,
                         minHeight: 8,
                       ),
@@ -133,7 +149,7 @@ class WeeklyProgressScreen extends StatelessWidget {
                     color: Colors.amber.shade200.withOpacity(0.6),
                     blurRadius: 12,
                     offset: const Offset(0, 3),
-                  )
+                  ),
                 ],
               ),
               child: const Center(

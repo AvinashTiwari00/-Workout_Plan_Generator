@@ -1,10 +1,7 @@
-import 'package:college_project/database/database_helper.dart';
-import 'package:college_project/models/user_models.dart';
-import 'package:college_project/models/workout_plan.dart';
-import 'package:college_project/providers/user_provider.dart';
-import 'package:college_project/screens/dashboard_screen.dart';
+import '../utils/authenticated_navigation.dart';
+import '../widgets/fitness_page.dart';
+import 'package:college_project/repositories/user_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import 'signup_screen.dart';
 
@@ -17,6 +14,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _users = UserRepository();
   final _nameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
@@ -30,116 +28,120 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_isLoading || !_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    final data = await DatabaseHelper.instance.loginUser(
-      _nameCtrl.text.trim(),
-      _passwordCtrl.text.trim(),
-    );
+    try {
+      final account = await _users.login(_nameCtrl.text, _passwordCtrl.text);
 
-    setState(() => _isLoading = false);
-
-    if (data == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid credentials')),
-      );
-      return;
+
+      if (account == null) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invalid credentials')));
+        return;
+      }
+
+      await openAuthenticatedHome(context, account);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not log in. Please retry.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-
-    // Map DB user row into existing User model with defaults where needed
-    final user = User(
-      name: data['name'] as String? ?? '',
-      weight: (data['weight'] ?? '').toString(),
-      thisWeek: 0,
-      completed: 0,
-      todayWorkout: "Chest Day",
-      exercisesCount: 5,
-      exercises: const [
-        "Barbell Bench Press",
-        "Incline Dumbbell Press",
-        "Decline Bench Press",
-        "Chest Fly Machine",
-        "Push-Ups",
-      ],
-      weeklyProgress: const {
-        "Mon": 0,
-        "Tue": 0,
-        "Wed": 0,
-        "Thu": 0,
-        "Fri": 0,
-        "Sat": 0,
-        "Sun": 0,
-      },
-      goal: UserGoal.muscleGain,
-    );
-
-    if (!mounted) return;
-
-    context.read<UserProvider>().setUser(user);
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => DashboardScreen(user: user)),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter your name' : null,
+    return PopScope(
+      canPop: !_isLoading,
+      child: FitnessPage(
+        title: 'Login',
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: FitnessCard(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(Icons.login_rounded, size: 40, color: Colors.blue),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Welcome back',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1565C0),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Log in to continue your workout journey.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black54, height: 1.4),
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _nameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Enter your name'
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: Icon(Icons.lock_outline),
+                    ),
+                    obscureText: true,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Enter your password'
+                        : null,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Login'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const SignupScreen(),
+                              ),
+                            );
+                          },
+                    child: const Text('Create account'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordCtrl,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter your password' : null,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Login'),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SignupScreen()),
-                  );
-                },
-                child: const Text('Create account'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-

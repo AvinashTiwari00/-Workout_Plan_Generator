@@ -1,3 +1,8 @@
+import '../widgets/profile_drawer.dart';
+import 'Dashboard/weight_tracker_screen.dart';
+import 'Dashboard/workout_history_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:college_project/models/user_models.dart';
 import 'package:college_project/screens/Dashboard/weekly_progress_screen.dart';
@@ -9,19 +14,22 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>().user ?? this.user;
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWeb = constraints.maxWidth > 600;
         final screenWidth = MediaQuery.of(context).size.width;
         final isSmallScreen = screenWidth < 400;
-        
+
         // Responsive values
         final horizontalPadding = isWeb ? 40.0 : (isSmallScreen ? 16.0 : 20.0);
         final verticalPadding = isWeb ? 30.0 : 20.0;
         final maxContentWidth = isWeb ? 800.0 : double.infinity;
-        
+
         return Scaffold(
           backgroundColor: const Color(0xFFF5F6FA),
+
+          endDrawer: const ProfileDrawer(),
 
           // -------------------- APP BAR --------------------
           appBar: PreferredSize(
@@ -40,6 +48,19 @@ class DashboardScreen extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 centerTitle: true,
+                actions: [
+                  Builder(
+                    builder: (scaffoldContext) => IconButton(
+                      tooltip: 'Profile',
+                      icon: const Icon(
+                        Icons.account_circle_outlined,
+                        color: Colors.white,
+                      ),
+                      onPressed: () =>
+                          Scaffold.of(scaffoldContext).openEndDrawer(),
+                    ),
+                  ),
+                ],
                 title: Text(
                   "Dashboard",
                   style: TextStyle(
@@ -84,7 +105,9 @@ class DashboardScreen extends StatelessWidget {
                               Text(
                                 "Hello, ${user.name}",
                                 style: TextStyle(
-                                  fontSize: isWeb ? 26 : (isSmallScreen ? 20 : 22),
+                                  fontSize: isWeb
+                                      ? 26
+                                      : (isSmallScreen ? 20 : 22),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -92,7 +115,9 @@ class DashboardScreen extends StatelessWidget {
                               Text(
                                 "Ready for today's workout?",
                                 style: TextStyle(
-                                  fontSize: isWeb ? 17 : (isSmallScreen ? 14 : 15),
+                                  fontSize: isWeb
+                                      ? 17
+                                      : (isSmallScreen ? 14 : 15),
                                   color: Colors.black54,
                                 ),
                               ),
@@ -107,7 +132,9 @@ class DashboardScreen extends StatelessWidget {
                     // -------------------- TODAY'S WORKOUT CARD --------------------
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.all(isWeb ? 28 : (isSmallScreen ? 16 : 20)),
+                      padding: EdgeInsets.all(
+                        isWeb ? 28 : (isSmallScreen ? 16 : 20),
+                      ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Colors.blue.shade600, Colors.blue.shade900],
@@ -156,14 +183,38 @@ class DashboardScreen extends StatelessWidget {
                                       vertical: isWeb ? 14 : 10,
                                     ),
                                   ),
-                                  onPressed: () {
-                                    Navigator.pushNamed(context, '/categories', arguments: user);
+                                  onPressed: () async {
+                                    await Navigator.pushNamed(
+                                      context,
+                                      '/categories',
+                                      arguments: user,
+                                    );
+                                    if (!context.mounted) return;
+                                    try {
+                                      await context
+                                          .read<UserProvider>()
+                                          .refresh();
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Could not refresh dashboard. Please reopen it.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
                                   },
                                   child: Text(
                                     "Start Workout",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,
-                                      fontSize: isWeb ? 18 : (isSmallScreen ? 14 : 16),
+                                      fontSize: isWeb
+                                          ? 18
+                                          : (isSmallScreen ? 14 : 16),
                                     ),
                                   ),
                                 ),
@@ -176,6 +227,10 @@ class DashboardScreen extends StatelessWidget {
                                   child: Image.network(
                                     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8wPEX6H-CILWI1SJ69L4yMUFwKmjLk9BGmQ&s",
                                     fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.fitness_center,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -188,7 +243,6 @@ class DashboardScreen extends StatelessWidget {
                     SizedBox(height: isWeb ? 35 : 30),
 
                     // -------------------- WEEKLY PROGRESS --------------------
-                   
                     Text(
                       "Weekly Progress",
                       style: TextStyle(
@@ -208,10 +262,15 @@ class DashboardScreen extends StatelessWidget {
                         );
                       },
                       child: Container(
-                        padding: EdgeInsets.all(isWeb ? 28 : (isSmallScreen ? 16 : 20)),
+                        padding: EdgeInsets.all(
+                          isWeb ? 28 : (isSmallScreen ? 16 : 20),
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.blue.shade600, Colors.blue.shade900],
+                            colors: [
+                              Colors.blue.shade600,
+                              Colors.blue.shade900,
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -240,14 +299,18 @@ class DashboardScreen extends StatelessWidget {
                                             .length /
                                         7,
                                     strokeWidth: isWeb ? 13 : 11,
-                                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation(
+                                      Colors.white,
+                                    ),
                                     backgroundColor: Colors.white30,
                                   ),
                                   Text(
                                     "${user.weeklyProgress.values.where((v) => v == 1).length}/7",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: isWeb ? 30 : (isSmallScreen ? 22 : 26),
+                                      fontSize: isWeb
+                                          ? 30
+                                          : (isSmallScreen ? 22 : 26),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -262,31 +325,39 @@ class DashboardScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: user.weeklyProgress.entries.map((e) {
                                 final bool done = e.value == 1;
-                                return Column(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: isWeb ? 20 : (isSmallScreen ? 16 : 18),
-                                      backgroundColor: done
-                                          ? Colors.green.shade200
-                                          : Colors.red.shade200,
-                                      child: Icon(
-                                        done ? Icons.check : Icons.close,
-                                        color: done
-                                            ? Colors.green.shade700
-                                            : Colors.red.shade700,
-                                        size: isWeb ? 24 : (isSmallScreen ? 20 : 22),
+                                return Expanded(
+                                  child: Column(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: isWeb
+                                            ? 20
+                                            : (isSmallScreen ? 16 : 18),
+                                        backgroundColor: done
+                                            ? Colors.green.shade200
+                                            : Colors.red.shade200,
+                                        child: Icon(
+                                          done ? Icons.check : Icons.close,
+                                          color: done
+                                              ? Colors.green.shade700
+                                              : Colors.red.shade700,
+                                          size: isWeb
+                                              ? 24
+                                              : (isSmallScreen ? 20 : 22),
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(height: isWeb ? 8 : 6),
-                                    Text(
-                                      e.key,
-                                      style: TextStyle(
-                                        fontSize: isWeb ? 16 : (isSmallScreen ? 12 : 14),
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
+                                      SizedBox(height: isWeb ? 8 : 6),
+                                      Text(
+                                        e.key,
+                                        style: TextStyle(
+                                          fontSize: isWeb
+                                              ? 16
+                                              : (isSmallScreen ? 12 : 14),
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 );
                               }).toList(),
                             ),
@@ -297,12 +368,16 @@ class DashboardScreen extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  "Tap to view full report",
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: isWeb ? 15 : (isSmallScreen ? 12 : 13),
-                                    fontWeight: FontWeight.w500,
+                                Flexible(
+                                  child: Text(
+                                    "Tap to view full report",
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: isWeb
+                                          ? 15
+                                          : (isSmallScreen ? 12 : 13),
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 6),
@@ -320,7 +395,40 @@ class DashboardScreen extends StatelessWidget {
 
                     SizedBox(height: isWeb ? 35 : 30),
 
+                    _entryCard(
+                      icon: Icons.monitor_weight_outlined,
+                      title: 'Weight Tracker',
+                      subtitle: 'Track your weight over time',
+                      isWeb: isWeb,
+                      isSmallScreen: isSmallScreen,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const WeightTrackerScreen(),
+                        ),
+                      ),
+                    ),
                     // -------------------- QUICK STATS --------------------
+                    const SizedBox(height: 16),
+                    _entryCard(
+                      icon: Icons.history,
+                      title: 'Workout History',
+                      subtitle: 'View your completed workouts',
+                      isWeb: isWeb,
+                      isSmallScreen: isSmallScreen,
+                      onTap: () {
+                        final id = context.read<UserProvider>().account?.id;
+                        if (id != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => WorkoutHistoryScreen(userId: id),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(height: isWeb ? 35 : 30),
                     Text(
                       "Quick Stats",
                       style: TextStyle(
@@ -367,7 +475,8 @@ class DashboardScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => WeeklySummaryScreen(user: user),
+                                  builder: (_) =>
+                                      WeeklySummaryScreen(user: user),
                                 ),
                               );
                             },
@@ -392,6 +501,94 @@ class DashboardScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _entryCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isWeb,
+    required bool isSmallScreen,
+  }) {
+    final radius = BorderRadius.circular(isWeb ? 24 : 20);
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.shade200.withValues(alpha: 0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade600, Colors.blue.shade900],
+            ),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: EdgeInsets.all(isWeb ? 28 : (isSmallScreen ? 16 : 20)),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: isWeb ? 32 : 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isWeb ? 22 : 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.white70,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
